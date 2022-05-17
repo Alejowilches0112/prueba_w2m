@@ -1,0 +1,47 @@
+plugins {
+	id 'org.springframework.boot' version '2.6.7'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'java'
+}
+
+group = 'com.prueba.w2m'
+version = '1.0.0'
+sourceCompatibility = '11'
+
+repositories {
+	mavenCentral()
+}
+
+def var = dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-web-services'
+
+	testImplementation 'io.cucumber:cucumber-java:7.0.0'
+	testImplementation 'io.cucumber:cucumber-junit:7.0.0'
+	testImplementation 'org.junit.jupiter:junit-jupiter:5.7.2'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'io.rest-assured:rest-assured:4.0.0'
+	runtimeOnly 'com.h2database:h2'
+}
+
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+configurations{
+	cucumberRuntime {
+		extendsFrom testImplementation
+	}
+}
+
+task cucumber(){
+	dependsOn assemble, testClasses
+	doLast {
+		javaexec {
+			main = "io.cucumber.core.cli.Main"
+			classpath = configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output
+			args = ['--plugin', 'html:reports/test-report', '--plugin', 'pretty', '--glue', 'com.prueba.w2m', 'src/test/resources']
+		}
+	}
+}
